@@ -1,46 +1,47 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import RecipesTable from './RecipesTable'
+import axios from 'axios'
 
 export default function RecipesDashboard() {
+  const [filters, setFilters] = useState({})
+  const [recipes, setRecipes] = useState([])
+
+  const setIngredientFilter = (word) => {
+    const newFilters = { ...filters, by_ingredient: word }
+    setFilters(newFilters)
+  }
+
+  useEffect(() => {
+    async function fetchRecipes() {
+      const items = await axios.get('/api/recipes', { params: filters }).then(response => response.data)
+      setRecipes(items)
+    }
+    fetchRecipes()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters])
+
   return (
     <main>
-      <section class="container">
-        <div class="row pt-5 pb-3">
-          <div class="col-lg-6 col-md-8">
-            <h1 class="fw-light">Latest 30 recipes</h1>
-            <form class="row row-cols-lg-auto align-items-center">
-              <div class="col-12">
-                <div class="input-group">
-                  <input type="text" class="form-control" placeholder="Write ingredients here ..." />
+      <section className="container">
+        <div className="row pt-5 pb-3">
+          <div className="col-lg-6 col-md-8">
+            <h1 className="fw-light">Latest 30 recipes</h1>
+            <form className="row row-cols-lg-auto align-items-center">
+              <div className="col-12">
+                <div className="input-group">
+                  <input type="text" value={filters.by_ingredient} onChange={e => setIngredientFilter(e.target.value)} className="form-control" placeholder="Write ingredients (ex: grasse, riz) ..." />
                 </div>
               </div>
 
-              <div class="col-12">
-                <button type="submit" class="btn btn-primary">Search</button>
+              <div className="col-12">
+                <button type="submit" className="btn btn-primary">Search { filters.by_ingredient }</button>
               </div>
             </form>
           </div>
         </div>
       </section>
 
-      <div class="album bg-light">
-        <div class="container">
-
-          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-            <div class="col">
-              <div class="card shadow-sm">
-                <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/></svg>
-
-                <div class="card-body">
-                  <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-                  <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">9 mins</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <RecipesTable recipes={recipes}/>
     </main>
   )
 }
