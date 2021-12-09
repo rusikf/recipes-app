@@ -7,7 +7,9 @@ recipes_rows = invalid_json.split("\n").map do |row|
 rescue StandardError
   nil
 end.compact
-recipes_rows.take(10).each do |row_string|
+bar = ProgressBar.create(title: "Recipes", total: recipes_rows.size)
+
+recipes_rows.each do |row_string|
   row = row_string.with_indifferent_access
   recipe = Recipe.find_or_initialize_by(name: row[:name])
   recipe.assign_attributes(
@@ -19,10 +21,12 @@ recipes_rows.take(10).each do |row_string|
     author: row[:author].present? ? Profile.find_or_create_by!(name: row[:author]) : nil
   )
   recipe.save!
-  row[:tags].each do |tag|
-    tag_model = Tag.find_or_create_by!(title: tag)
-    recipe.tags << tag_model
+
+  tag_ids = row[:tags].map do |tag|
+    Tag.find_or_create_by!(title: tag).id
   end
+  recipe.tag_ids = tag_ids
+  bar.increment
 end
 
 # This file should contain all the record creation needed to seed the database with its default values.
