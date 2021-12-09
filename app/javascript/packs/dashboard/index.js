@@ -5,6 +5,7 @@ import axios from 'axios'
 export default function RecipesDashboard() {
   const [filters, setFilters] = useState({})
   const [recipes, setRecipes] = useState([])
+  const [formSubmitted, setFormSubmitted] = useState(false)
 
   const setIngredientFilter = (word) => {
     const newFilters = { ...filters, by_ingredient: word }
@@ -16,14 +17,20 @@ export default function RecipesDashboard() {
     setFilters(newFilters)
   }
 
+  async function fetchRecipes() {
+    const items = await axios.get('/api/recipes', { params: filters }).then(response => response.data)
+    setRecipes(items)
+  }
+
   useEffect(() => {
-    async function fetchRecipes() {
-      const items = await axios.get('/api/recipes', { params: filters }).then(response => response.data)
-      setRecipes(items)
-    }
     fetchRecipes()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters])
+  }, [])
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    fetchRecipes()
+  }
 
   return (
     <main>
@@ -31,7 +38,7 @@ export default function RecipesDashboard() {
         <div className="row pt-5 pb-3">
           <div className="col-xs-10">
             <h1 className="fw-light">Latest 30 recipes</h1>
-            <form className="row row-cols-lg-auto">
+            <form className="row row-cols-lg-auto" onSubmit={handleSubmit}>
               <div className="col-10">
                 <div className="input-group">
                   <input type="text" value={filters.by_ingredient || ''} onChange={e => setIngredientFilter(e.target.value || null)} className="form-control" placeholder="Write ingredients (ex: grasse, riz) ..." />
