@@ -40,18 +40,22 @@ RSpec.describe 'Api::Recipes', type: :request do
       end
 
       context 'by_ingredient' do
-        let(:potato_recipes) { FactoryBot.create_list(:recipe, 3, ingredients: ['Potato and Tomato', 'Eggs']) }
+        let(:potato_recipe1) { FactoryBot.create(:recipe, ingredients: ['Potato and Tomato', 'with best tomato']) }
+        let(:potato_recipe2) { FactoryBot.create(:recipe, ingredients: ['One tomato', 'Eggs']) }
+
         let(:invalid_recipe) { FactoryBot.create(:recipe, ingredients: ['Bread']) }
 
         before do
-          potato_recipes
           invalid_recipe
+          potato_recipe2
+          potato_recipe1
         end
 
         it 'filter by ingredient name' do
-          get '/api/recipes', params: { by_ingredient: 'potato' }
+          get '/api/recipes', params: { by_ingredient: 'tomato' }
           api_recipes = JSON.parse(response.body)
-          expect(api_recipes.size).to eq(3)
+          expect(api_recipes.size).to eq(2)
+          expect(api_recipes.map { |recipe| recipe['id'] } ).to eq([potato_recipe1.id, potato_recipe2.id])
         end
       end
     end
